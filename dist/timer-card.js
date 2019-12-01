@@ -37,6 +37,7 @@ const directives = new WeakMap();
 const isDirective = (o) => {
     return typeof o === 'function' && directives.has(o);
 };
+//# sourceMappingURL=directive.js.map
 
 /**
  * @license
@@ -69,6 +70,7 @@ const removeNodes = (container, startNode, endNode = null) => {
         node = n;
     }
 };
+//# sourceMappingURL=dom.js.map
 
 /**
  * @license
@@ -92,6 +94,7 @@ const noChange = {};
  * A sentinel value that signals a NodePart to fully clear its content.
  */
 const nothing = {};
+//# sourceMappingURL=part.js.map
 
 /**
  * @license
@@ -281,6 +284,7 @@ const createMarker = () => document.createComment('');
  *    * (') then any non-(')
  */
 const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F \x09\x0a\x0c\x0d"'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
+//# sourceMappingURL=template.js.map
 
 /**
  * @license
@@ -378,6 +382,7 @@ class TemplateInstance {
         return fragment;
     }
 }
+//# sourceMappingURL=template-instance.js.map
 
 /**
  * @license
@@ -442,6 +447,7 @@ class TemplateResult {
         return template;
     }
 }
+//# sourceMappingURL=template-result.js.map
 
 /**
  * @license
@@ -866,6 +872,7 @@ const getOptions = (o) => o &&
     (eventOptionsSupported ?
         { capture: o.capture, passive: o.passive, once: o.once } :
         o.capture);
+//# sourceMappingURL=parts.js.map
 
 /**
  * @license
@@ -917,6 +924,7 @@ class DefaultTemplateProcessor {
     }
 }
 const defaultTemplateProcessor = new DefaultTemplateProcessor();
+//# sourceMappingURL=default-template-processor.js.map
 
 /**
  * @license
@@ -964,6 +972,7 @@ function templateFactory(result) {
     return template;
 }
 const templateCaches = new Map();
+//# sourceMappingURL=template-factory.js.map
 
 /**
  * @license
@@ -1004,6 +1013,7 @@ const render = (result, container, options) => {
     part.setValue(result);
     part.commit();
 };
+//# sourceMappingURL=render.js.map
 
 /**
  * @license
@@ -1027,6 +1037,7 @@ const render = (result, container, options) => {
  * render to and update a container.
  */
 const html = (strings, ...values) => new TemplateResult(strings, values, 'html', defaultTemplateProcessor);
+//# sourceMappingURL=lit-html.js.map
 
 /**
  * @license
@@ -1151,6 +1162,7 @@ function insertNodeIntoTemplate(template, node, refNode = null) {
         }
     }
 }
+//# sourceMappingURL=modify-template.js.map
 
 /**
  * @license
@@ -1390,6 +1402,7 @@ const render$1 = (result, container, options) => {
         window.ShadyCSS.styleElement(container.host);
     }
 };
+//# sourceMappingURL=shady-render.js.map
 
 /**
  * @license
@@ -1404,6 +1417,7 @@ const render$1 = (result, container, options) => {
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+var _a;
 /**
  * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
  * replaced at compile time by the munged name for object[property]. We cannot
@@ -1459,6 +1473,13 @@ const STATE_UPDATE_REQUESTED = 1 << 2;
 const STATE_IS_REFLECTING_TO_ATTRIBUTE = 1 << 3;
 const STATE_IS_REFLECTING_TO_PROPERTY = 1 << 4;
 const STATE_HAS_CONNECTED = 1 << 5;
+/**
+ * The Closure JS Compiler doesn't currently have good support for static
+ * property semantics where "this" is dynamic (e.g.
+ * https://github.com/google/closure-compiler/issues/3177 and others) so we use
+ * this hack to bypass any rewriting by the compiler.
+ */
+const finalized = 'finalized';
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
@@ -1546,9 +1567,7 @@ class UpdatingElement extends HTMLElement {
                 return this[key];
             },
             set(value) {
-                // tslint:disable-next-line:no-any no symbol in index
                 const oldValue = this[name];
-                // tslint:disable-next-line:no-any no symbol in index
                 this[key] = value;
                 this._requestUpdate(name, oldValue);
             },
@@ -1562,16 +1581,12 @@ class UpdatingElement extends HTMLElement {
      * @nocollapse
      */
     static finalize() {
-        if (this.hasOwnProperty(JSCompiler_renameProperty('finalized', this)) &&
-            this.finalized) {
-            return;
-        }
         // finalize any superclasses
         const superCtor = Object.getPrototypeOf(this);
-        if (typeof superCtor.finalize === 'function') {
+        if (!superCtor.hasOwnProperty(finalized)) {
             superCtor.finalize();
         }
-        this.finalized = true;
+        this[finalized] = true;
         this._ensureClassProperties();
         // initialize Map populated in observedAttributes
         this._attributeToPropertyMap = new Map();
@@ -1654,7 +1669,8 @@ class UpdatingElement extends HTMLElement {
      */
     initialize() {
         this._saveInstanceProperties();
-        // ensures first update will be caught by an early access of `updateComplete`
+        // ensures first update will be caught by an early access of
+        // `updateComplete`
         this._requestUpdate();
     }
     /**
@@ -1696,10 +1712,10 @@ class UpdatingElement extends HTMLElement {
     }
     connectedCallback() {
         this._updateState = this._updateState | STATE_HAS_CONNECTED;
-        // Ensure first connection completes an update. Updates cannot complete before
-        // connection and if one is pending connection the `_hasConnectionResolver`
-        // will exist. If so, resolve it to complete the update, otherwise
-        // requestUpdate.
+        // Ensure first connection completes an update. Updates cannot complete
+        // before connection and if one is pending connection the
+        // `_hasConnectionResolver` will exist. If so, resolve it to complete the
+        // update, otherwise requestUpdate.
         if (this._hasConnectedResolver) {
             this._hasConnectedResolver();
             this._hasConnectedResolver = undefined;
@@ -1925,15 +1941,36 @@ class UpdatingElement extends HTMLElement {
      * The Promise value is a boolean that is `true` if the element completed the
      * update without triggering another update. The Promise result is `false` if
      * a property was set inside `updated()`. If the Promise is rejected, an
-     * exception was thrown during the update. This getter can be implemented to
-     * await additional state. For example, it is sometimes useful to await a
-     * rendered element before fulfilling this Promise. To do this, first await
-     * `super.updateComplete` then any subsequent state.
+     * exception was thrown during the update.
+     *
+     * To await additional asynchronous work, override the `_getUpdateComplete`
+     * method. For example, it is sometimes useful to await a rendered element
+     * before fulfilling this Promise. To do this, first await
+     * `super._getUpdateComplete()`, then any subsequent state.
      *
      * @returns {Promise} The Promise returns a boolean that indicates if the
      * update resolved without triggering another update.
      */
     get updateComplete() {
+        return this._getUpdateComplete();
+    }
+    /**
+     * Override point for the `updateComplete` promise.
+     *
+     * It is not safe to override the `updateComplete` getter directly due to a
+     * limitation in TypeScript which means it is not possible to call a
+     * superclass getter (e.g. `super.updateComplete.then(...)`) when the target
+     * language is ES5 (https://github.com/microsoft/TypeScript/issues/338).
+     * This method should be overridden instead. For example:
+     *
+     *   class MyElement extends LitElement {
+     *     async _getUpdateComplete() {
+     *       await super._getUpdateComplete();
+     *       await this._myChild.updateComplete;
+     *     }
+     *   }
+     */
+    _getUpdateComplete() {
         return this._updatePromise;
     }
     /**
@@ -1986,10 +2023,12 @@ class UpdatingElement extends HTMLElement {
     firstUpdated(_changedProperties) {
     }
 }
+_a = finalized;
 /**
  * Marks class as having finished creating properties.
  */
-UpdatingElement.finalized = true;
+UpdatingElement[_a] = true;
+//# sourceMappingURL=updating-element.js.map
 
 /**
  * @license
@@ -2061,7 +2100,6 @@ const standardProperty = (options, element) => {
             //     initializer: descriptor.initializer,
             //   }
             // ],
-            // tslint:disable-next-line:no-any decorator
             initializer() {
                 if (typeof element.initializer === 'function') {
                     this[element.key] = element.initializer.call(this);
@@ -2090,6 +2128,7 @@ function property(options) {
         legacyProperty(options, protoOrDescriptor, name) :
         standardProperty(options, protoOrDescriptor);
 }
+//# sourceMappingURL=decorators.js.map
 
 /**
 @license
@@ -2135,6 +2174,9 @@ const textFromCSSResult = (value) => {
     if (value instanceof CSSResult) {
         return value.cssText;
     }
+    else if (typeof value === 'number') {
+        return value;
+    }
     else {
         throw new Error(`Value passed to 'css' function must be a 'css' function result: ${value}. Use 'unsafeCSS' to pass non-literal values, but
             take care to ensure page security.`);
@@ -2150,6 +2192,7 @@ const css = (strings, ...values) => {
     const cssText = values.reduce((acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1], strings[0]);
     return new CSSResult(cssText, constructionToken);
 };
+//# sourceMappingURL=css-tag.js.map
 
 /**
  * @license
@@ -2168,7 +2211,7 @@ const css = (strings, ...values) => {
 // This line will be used in regexes to search for LitElement usage.
 // TODO(justinfagnani): inject version number at build time
 (window['litElementVersions'] || (window['litElementVersions'] = []))
-    .push('2.0.1');
+    .push('2.2.1');
 /**
  * Minimal implementation of Array.prototype.flat
  * @param arr the array to flatten
@@ -2191,7 +2234,9 @@ const flattenStyles = (styles) => styles.flat ? styles.flat(Infinity) : arrayFla
 class LitElement extends UpdatingElement {
     /** @nocollapse */
     static finalize() {
-        super.finalize();
+        // The Closure JS Compiler does not always preserve the correct "this"
+        // when calling static super methods (b/137460243), so explicitly bind.
+        super.finalize.call(this);
         // Prepare styling that is stamped at first render time. Styling
         // is built from user provided `styles` or is inherited from the superclass.
         this._styles =
@@ -2331,8 +2376,11 @@ class LitElement extends UpdatingElement {
 /**
  * Ensure this class is marked as `finalized` as an optimization ensuring
  * it will not needlessly try to `finalize`.
+ *
+ * Note this property name is a string to prevent breaking Closure JS Compiler
+ * optimizations. See updating-element.ts for more information.
  */
-LitElement.finalized = true;
+LitElement['finalized'] = true;
 /**
  * Render method used to render the lit-html TemplateResult to the element's
  * DOM.
@@ -2342,6 +2390,7 @@ LitElement.finalized = true;
  * @nocollapse
  */
 LitElement.render = render$1;
+//# sourceMappingURL=lit-element.js.map
 
 const leftPad = (num) => (num < 10 ? `0${num}` : num);
 function secondsToDuration(d) {
@@ -2352,10 +2401,10 @@ function secondsToDuration(d) {
         return `${h}:${leftPad(m)}:${leftPad(s)}`;
     }
     if (m > 0) {
-        return `${m}:${leftPad(s)}`;
+        return `00:${leftPad(m)}:${leftPad(s)}`;
     }
     if (s > 0) {
-        return "" + s;
+        return `00:00:${leftPad(s)}`;
     }
     return null;
 }
@@ -2447,6 +2496,10 @@ const fireEvent = (node, type, detail, options) => {
 };
 
 let RadialMenu = class RadialMenu extends LitElement {
+    constructor() {
+        super(...arguments);
+        this._durationInput = 10;
+    }
     setConfig(config) {
         if (!config || !config.entity) {
             throw new Error("Invalid configuration");
@@ -2472,9 +2525,15 @@ let RadialMenu = class RadialMenu extends LitElement {
         >
       `;
         }
+        // <div @click="${this._moreInfo}">
         return html `
       <ha-card .header="${this._config.name}">
-        <div @click="${this._moreInfo}">${this._computeDisplay(stateObj)}</div>
+        <div>
+          ${stateObj.state === "active" ? this._computeDisplay(stateObj) : (html `
+            <input type="number" name="minutes" ="1" max="120" .value=${this._durationInput} @input=${this._handleInput} >
+          `)}
+        </div>
+
         <mwc-button
           .action="${stateObj.state === "active" ? "pause" : "start"}"
           @click="${this._handleClick}"
@@ -2538,8 +2597,13 @@ let RadialMenu = class RadialMenu extends LitElement {
     }
     _handleClick(ev) {
         this.hass.callService("timer", ev.currentTarget.action, {
-            entity_id: this._config.entity
+            entity_id: this._config.entity,
+            duration: ev.currentTarget.action === "start" ? secondsToDuration(this._durationInput * 60) : undefined,
         });
+    }
+    _handleInput(event) {
+        console.log(event.target.value);
+        this._durationInput = parseInt(event.target.value, 10);
     }
     static get styles() {
         return css `

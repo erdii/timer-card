@@ -9,10 +9,10 @@ export default function secondsToDuration(d: number) {
     return `${h}:${leftPad(m)}:${leftPad(s)}`;
   }
   if (m > 0) {
-    return `${m}:${leftPad(s)}`;
+    return `00:${leftPad(m)}:${leftPad(s)}`;
   }
   if (s > 0) {
-    return "" + s;
+    return `00:00:${leftPad(s)}`;
   }
   return null;
 }

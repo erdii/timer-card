@@ -27,6 +27,8 @@ class RadialMenu extends LitElement {
 
   private _interval?: number;
 
+  private _durationInput: number = 10;
+
   public setConfig(config: TimerCardConfig): void {
     if (!config || !config.entity) {
       throw new Error("Invalid configuration");
@@ -63,9 +65,15 @@ class RadialMenu extends LitElement {
       `;
     }
 
+    // <div @click="${this._moreInfo}">
     return html`
       <ha-card .header="${this._config.name}">
-        <div @click="${this._moreInfo}">${this._computeDisplay(stateObj)}</div>
+        <div>
+          ${stateObj.state === "active" ? this._computeDisplay(stateObj) : (html`
+            <input type="number" name="minutes" ="1" max="120" .value=${this._durationInput} @input=${this._handleInput} >
+          `)}
+        </div>
+
         <mwc-button
           .action="${stateObj.state === "active" ? "pause" : "start"}"
           @click="${this._handleClick}"
@@ -146,8 +154,14 @@ class RadialMenu extends LitElement {
 
   private _handleClick(ev) {
     this.hass!.callService("timer", ev.currentTarget.action, {
-      entity_id: this._config!.entity
+      entity_id: this._config!.entity,
+      duration: ev.currentTarget.action === "start" ? secondsToDuration(this._durationInput * 60) : undefined,
     });
+  }
+
+  private _handleInput(event) {
+    console.log(event.target.value);
+    this._durationInput = parseInt(event.target.value, 10);
   }
 
   static get styles(): CSSResult {
